@@ -1,440 +1,268 @@
 import random
-dashboard = [" ", " ", " ",
-             " ", " ", " ",
-             " ", " ", " "]
+
+dashboard = [" "] * 9  # Simplify initialization of the dashboard
 game_on = True
 winner = None
-player="X"
+player = "X"
 
-#function for display dashboard....
+# Emoji for players
+PLAYER_X_EMOJI = "❌"
+PLAYER_O_EMOJI = "⭕"
+
+
+# function for display dashboard with emojis....
 def display_dashboard():
-  print("\n")
-  print("\t"+ dashboard[0] + " | " + dashboard[1] + " | " + dashboard[2])
-  print("\t---------")
-  print("\t"+ dashboard[3] + " | " + dashboard[4] + " | " + dashboard[5])
-  print("\t---------")
-  print("\t"+ dashboard[6] + " | " + dashboard[7] + " | " + dashboard[8])
-  print("\n")
+    board = [PLAYER_X_EMOJI if cell == 'X' else PLAYER_O_EMOJI if cell == 'O' else ' ' for cell in dashboard]
+    print("\n")
+    print(f"\t {board[0]} | {board[1]} | {board[2]}")
+    print("\t-----------")
+    print(f"\t {board[3]} | {board[4]} | {board[5]}")
+    print("\t-----------")
+    print(f"\t {board[6]} | {board[7]} | {board[8]}")
+    print("\n")
 
-#function for play_with_players trun
-def players_turn(player,player1,player2):
-  
-  if player=="X":
-    print(f"{player1} {[player]} now yours turn.")
-    pos= input("Choose a pos from (1-9): ")
-    valid = False
-  if player=="O":
-    print(f"{player2} {[player]} now yours turn.")
-    pos= input("Choose a position from (1-9): ")
-    valid = False
-    
-  while not valid:
-    while pos not in ['1','2','3','4','5','6','7','8','9']:
-        pos = input("Choose a position from (1-9): ")
-    pos=int(pos)-1
-    if dashboard[pos] == " ":
-      valid = True
+
+# Input validation
+def get_valid_position(player):
+    while True:
+        pos = input(f"{player} ➡️  Choose a position from 1 to 9: ")
+        if pos.isdigit() and 1 <= int(pos) <= 9:
+            pos = int(pos) - 1
+            if dashboard[pos] == " ":
+                return pos
+            else:
+                print("❗ This position is already taken. Try another one.")
+        else:
+            print("❗ Invalid input. Please enter a number between 1 and 9.")
+
+
+# function for players' turn
+def players_turn(player, player1, player2):
+    if player == "X":
+        print(f"{player1} {PLAYER_X_EMOJI} now it's your turn.")
     else:
-      print("This pos is not vacant can't go there. Go again.")
-    
-  dashboard[pos] = player
-  display_dashboard()
-  
-#function for play_with_normal_computers trun  
-def normal_computer_turn(player,player1,player2):
-  
-  if player=="X":
-    pos= str(gen_random_index())
-    print(f"\n{[player]} {player1} entered on {pos}th pos .")
-    valid = False
-    
-  if player=="O":
-    print(f"{player2} {[player]} now yours turn.")
-    pos= input("Choose a pos from (1-9),,,: ")
-    valid = False
-      
-  while not valid:
-    while pos not in ['1','2','3','4','5','6','7','8','9']:
-        pos = input("Choose a position from (1-9)...: ")
-    pos=int(pos)-1
-    if dashboard[pos] == " ":
-      valid = True
+        print(f"{player2} {PLAYER_O_EMOJI} now it's your turn.")
+    pos = get_valid_position(player)
+    dashboard[pos] = player
+    display_dashboard()
+
+
+# function for normal computer turn
+def normal_computer_turn(player, player1, player2):
+    if player == "X":
+        pos = gen_random_index()
+        print(f"\n{PLAYER_X_EMOJI} {player1} chose position {pos + 1}.")
     else:
-      print("This pos is not vacant can't go there. Go again.")
-    
-  dashboard[pos] = player
-  display_dashboard()
-  
-#function for generating random index of play_with_normal_compute.....  
+        print(f"{player2} {PLAYER_O_EMOJI} now it's your turn.")
+        pos = get_valid_position(player)
+    dashboard[pos] = player
+    display_dashboard()
+
+
+# function for generating random index of computer turn
 def gen_random_index():
-  pos=random.randint(1,9)
-  if dashboard[int(pos)-1] == " ":
-      return pos
-  else:
-      return gen_random_index()
+    pos = random.randint(0, 8)
+    while dashboard[pos] != " ":
+        pos = random.randint(0, 8)
+    return pos
 
 
-#.......rows,coumns,diaginals checking................
-def rows_check():
-  global game_on
-  if dashboard[0] == dashboard[1] == dashboard[2] != " ":
-    game_on= False
-    return dashboard[0]
-  
-  if dashboard[3] == dashboard[4] == dashboard[5] != " ":
-    game_on= False
-    return dashboard[3]
-  
-  if dashboard[6] == dashboard[7] == dashboard[8] != " ":
-    game_on= False
-    return dashboard[6] 
-  else:
-    return None
-  
-def columns_check():
-  global game_on
-  if dashboard[0] == dashboard[3] == dashboard[6] != " ":
-    game_on = False
-    return dashboard[0]
-
-  if dashboard[1] == dashboard[4] == dashboard[7] != " ":
-    
-    game_on= False
-    return dashboard[1] 
-
-  if dashboard[2] == dashboard[5] == dashboard[8] != " ":
-    game_on= False
-    return dashboard[2] 
-  else:
+# Combined function to check rows, columns, and diagonals
+def check_for_winner():
+    win_conditions = [
+        (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Rows
+        (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Columns
+        (0, 4, 8), (2, 4, 6)  # Diagonals
+    ]
+    for a, b, c in win_conditions:
+        if dashboard[a] == dashboard[b] == dashboard[c] != " ":
+            return dashboard[a]  # Return the winner ('X' or 'O')
     return None
 
-def diagonals_check():
-  global game_on
-  if dashboard[0] == dashboard[4] == dashboard[8] != " ":
-    game_on= False
-    return dashboard[0] 
-
-  if dashboard[2] == dashboard[4] == dashboard[6] != " ":
-    game_on= False
-    return dashboard[2]
-  else:
-    return None
 
 def check_game_status():
-  global winner
-  global game_on
-  #checking for winner...
-  if rows_check():
-    winner = rows_check()
-  elif columns_check():
-    winner = columns_check()
-  elif diagonals_check():
-    winner = diagonals_check()
-  else:
-    winner = None
-    
-  #checking for tie
-  if ' ' not in dashboard:
-    game_on = False
-    return True
-  else:
-    return False
-  
+    global game_on, winner
+    winner = check_for_winner()
+    if winner:
+        game_on = False
+    elif " " not in dashboard:
+        game_on = False  # It's a tie
+
+
 def switch_player():
-  global player
-  if player == "X":
-    player = "O"
-  elif player == "O":
+    global player
+    player = "O" if player == "X" else "X"
+
+
+def reset_game():
+    global dashboard, game_on, winner, player
+    dashboard = [" "] * 9
+    game_on = True
+    winner = None
     player = "X"
-    
-def play_again():
-  for i in range(len(dashboard)):
-    dashboard.insert(i," ")
-  global game_on,winner,player
-  game_on = True
-  winner = None
-  player="X"
-  option_menu(player)
-
-
-#function for play with users
-def play_with_players():
-  player1=input("\nEnter Player1's Name: ")
-  player2=input("Enter Player2's Name: ")
-
-  if player1.isalpha() and player2.isalpha():
     display_dashboard()
-    # Loop until the game stops (winner or tie)
-    while game_on:
-      players_turn(player,player1,player2)
-      check_game_status()
-      switch_player()
-    #printing the winner or tie
-    if winner == "X":
-      print(f"Congrats! Mr/Mrs {player1} You won the game.\n")
-    if winner == "O":
-      print(f"Congrats! Mr/Mrs {player2} You won the game.\n")
-    elif winner == None:
-      print("Game Tie..Better luck next time for both of you..\n")
-  else:
-      print("Please enter name as alphabet characters only")
-      return play_with_players()
-    
-#function for play with normal computer
-def play_with_normal_computer():
-  player1="Normal_Computer"
-  player2=input("\nEnter Player2's Name: ")
-  if player2.isalpha():
-  # Loop until the game stops (winner or tie)
-    while game_on:
-      normal_computer_turn(player,player1,player2)
-      check_game_status()
-      switch_player()
-    #printing the winner or tie
-    if winner == "X":
-      print(f"Congrats! {player1} You won the game.\n")
-    if winner == "O":
-      print(f"Congrats! {player2} You won the game.\n")
-    elif winner == None:
-      print("Game Tie..Better luck next time for both of you..\n")
-  else:
-    print("Please enter name as alphabet characters only")
-    return play_with_normal_computer()
 
-#Play with Smart Computer.......................
 
-def print_board(board):
-  print("\n")
-  print("\t"+ board[1] + " | " + board[2] + " | " + board[3])
-  print("\t---------")
-  print("\t"+ board[4] + " | " + board[5] + " | " + board[6])
-  print("\t---------")
-  print("\t"+ board[7] + " | " + board[8] + " | " + board[9])
-  print("\n")
+# function to handle play with players
+def play_with_players():
+    player1 = input("\nEnter Player1's Name: ")
+    player2 = input("Enter Player2's Name: ")
 
-def checking_space(pos):
-    if board[pos] == ' ':
-        return True
-    else:
-        return False
-    
-def insert_letter(letter,pos):
-    if checking_space(pos):
-        if letter=='X':
-            print(f"\n{play1} {[letter]} entered on position {pos}\n")
+    if player1.isalpha() and player2.isalpha():
+        reset_game()
+        while game_on:
+            players_turn(player, player1, player2)
+            check_game_status()
+            if not game_on:
+                break
+            switch_player()
+
+        if winner == "X":
+            print(f"🎉 Congrats {player1} {PLAYER_X_EMOJI}, you won the game!")
+        elif winner == "O":
+            print(f"🎉 Congrats {player2} {PLAYER_O_EMOJI}, you won the game!")
         else:
-            print(f"\n{play2} {[letter]} entered on position {pos}\n")
-        
-        board[pos] = letter
-        print_board(board)
-        if (checking_draw()):
-            print("Game Tie..Better luck next time for both of you..\n")
-            play_again2()
-        if checking_for_win():
-            if letter == 'X':
-                print(f"Congrats! {play1} You won the game.\n")
-                play_again2()
+            print("🤝 It's a tie! Better luck next time!")
+    else:
+        print("❗ Please enter valid alphabetic names.")
+        play_with_players()
+
+
+# function to handle play with normal computer
+def play_with_normal_computer():
+    player1 = "Normal_Computer"
+    player2 = input("\nEnter Player2's Name: ")
+
+    if player2.isalpha():
+        reset_game()
+        while game_on:
+            if player == "X":
+                normal_computer_turn(player, player1, player2)
             else:
-                print(f"Congrats! {play2} You won the game.\n")
-                play_again2()
-        return
+                players_turn(player, player1, player2)
+            check_game_status()
+            if not game_on:
+                break
+            switch_player()
+
+        if winner == "X":
+            print(f"🎉 {player1} {PLAYER_X_EMOJI} won the game!")
+        elif winner == "O":
+            print(f"🎉 Congrats {player2} {PLAYER_O_EMOJI}, you won the game!")
+        else:
+            print("🤝 It's a tie!")
     else:
-        print("Can't insert there!")
-        pos = int(input("Please enter new position:  "))
-        insert_letter(letter, pos)
-        return
+        print("❗ Please enter valid alphabetic names.")
+        play_with_normal_computer()
 
 
-def checking_for_win():
-    if (board[1] == board[2] and board[1] == board[3] and board[1] != ' '):
-        return True
-    elif (board[4] == board[5] and board[4] == board[6] and board[4] != ' '):
-        return True
-    elif (board[7] == board[8] and board[7] == board[9] and board[7] != ' '):
-        return True
-    elif (board[1] == board[4] and board[1] == board[7] and board[1] != ' '):
-        return True
-    elif (board[2] == board[5] and board[2] == board[8] and board[2] != ' '):
-        return True
-    elif (board[3] == board[6] and board[3] == board[9] and board[3] != ' '):
-        return True
-    elif (board[1] == board[5] and board[1] == board[9] and board[1] != ' '):
-        return True
-    elif (board[7] == board[5] and board[7] == board[3] and board[7] != ' '):
-        return True
+# Smart Computer using Minimax Algorithm
+def minimax(board, is_maximizing):
+    scores = {'X': 1, 'O': -1, 'tie': 0}
+    result = check_for_winner()
+
+    if result == "X":
+        return scores['X']
+    elif result == "O":
+        return scores['O']
+    elif " " not in board:
+        return scores['tie']  # It's a tie
+
+    if is_maximizing:
+        best_score = -float('inf')
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "X"
+                score = minimax(board, False)
+                board[i] = " "
+                best_score = max(best_score, score)
+        return best_score
     else:
-        return False
+        best_score = float('inf')
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "O"
+                score = minimax(board, True)
+                board[i] = " "
+                best_score = min(best_score, score)
+        return best_score
 
 
-def checking_marks(mark):
-    if board[1] == board[2] and board[1] == board[3] and board[1] == mark:
-        return True
-    elif (board[4] == board[5] and board[4] == board[6] and board[4] == mark):
-        return True
-    elif (board[7] == board[8] and board[7] == board[9] and board[7] == mark):
-        return True
-    elif (board[1] == board[4] and board[1] == board[7] and board[1] == mark):
-        return True
-    elif (board[2] == board[5] and board[2] == board[8] and board[2] == mark):
-        return True
-    elif (board[3] == board[6] and board[3] == board[9] and board[3] == mark):
-        return True
-    elif (board[1] == board[5] and board[1] == board[9] and board[1] == mark):
-        return True
-    elif (board[7] == board[5] and board[7] == board[3] and board[7] == mark):
-        return True
-    else:
-        return False
-
-def checking_draw():
-    for key in board.keys():
-        if (board[key] == ' '):
-            return False
-    return True
-
-def play_turn(play):
-    print(f"{play2} {['O']} now yours turn.")
-    pos= input("\nChoose a position from (1-9): ")
-    valid= False
-    while not valid:
-        while pos not in ['1','2','3','4','5','6','7','8','9']:
-            pos = input("\nChoose a position from (1-9): ")
-        valid=True
-    pos=int(pos)
-    insert_letter(play, pos)
-    return
-
-
-def smart_computer_turn(comp,play):
-    best_score = -1000
-    bestMove = 0
-    for key in board.keys():
-        if (board[key] == ' '):
-            board[key] = comp
-            score = best_move(comp,board, 0, False)
-            board[key] = ' '
-            if (score > best_score):
+def smart_computer_turn():
+    best_score = -float('inf')
+    best_move = None
+    for i in range(9):
+        if dashboard[i] == " ":
+            dashboard[i] = "X"
+            score = minimax(dashboard, False)
+            dashboard[i] = " "
+            if score > best_score:
                 best_score = score
-                bestMove = key
+                best_move = i
+    dashboard[best_move] = "X"
+    print(f"Smart Computer {PLAYER_X_EMOJI} chose position {best_move + 1}.")
+    display_dashboard()
 
-    insert_letter(comp, bestMove)
-    return
 
-def best_move(comp,board, depth, isMaximizing):
-    if (checking_marks(comp)):
-        return 1
-    elif (checking_marks(play)):
-        return -1
-    elif (checking_draw()):
-        return 0
-
-    if (isMaximizing):
-        best_score = -1000
-        for key in board.keys():
-            if (board[key] == ' '):
-                board[key] = comp
-                score = best_move(comp,board, depth + 1, False)
-                board[key] = ' '
-                if (score > best_score):
-                    best_score = score
-        return best_score
-
-    else:
-        best_score = 1000
-        for key in board.keys():
-            if (board[key] == ' '):
-                board[key] = play
-                score = best_move(comp,board, depth + 1, True)
-                board[key] = ' '
-                if (score < best_score):
-                    best_score = score
-        return best_score
-
-board = {1:' ', 2:' ', 3:' ',
-         4:' ', 5:' ', 6:' ',
-         7:' ', 8:' ', 9:' '}
-
+# function to handle play with smart computer
 def play_with_smart_computer():
-    global play1,play2,play,comp
-    play1="Smart Computer"
-    play = 'O'
-    comp = 'X'
+    reset_game()
     while True:
-        person=input("Enter Player name: ")
-        if person.isalpha():
-            play2=person
+        player2 = input("Enter Player name: ")
+        if player2.isalpha():
             break
         else:
             print("Player name must be alphabet only!")
 
-    choice=input("\nWho goes first Smart Computer or Player\n\nEnter 'C' for Smart Computer and 'P' for Player: ")
-    if choice.upper()=='C' or choice.upper()=='P':
-        print_board(board)
-        while not checking_for_win():
-            if choice=='p':
-                play_turn(play)
-                smart_computer_turn(comp,play)
-            else:
-                smart_computer_turn(comp,play)
-                play_turn(play)
+    choice = input(
+        "\nWho goes first? Smart Computer or Player\nEnter 'C' for Smart Computer and 'P' for Player: ").upper()
+    if choice == 'C':
+        while game_on:
+            smart_computer_turn()
+            check_game_status()
+            if not game_on:
+                break
+            players_turn("O", "Smart Computer", player2)
+            check_game_status()
+    elif choice == 'P':
+        while game_on:
+            players_turn("O", "Smart Computer", player2)
+            check_game_status()
+            if not game_on:
+                break
+            smart_computer_turn()
+            check_game_status()
     else:
-        print("Choice must be alphabet only!")
-            
-def play_again2():
-  for i in range(len(board)+1):
-    board[i]=(" ")
-  global game_on,winner,player,play,comp
-  game_on = True
-  winner = None
-  player="X"
-  play='O'
-  comp='X'
-  option_menu(player)
-  
-#function for play with smart computer
-def option_menu(player):
-  cmd=True
-  while cmd:
-    print("\n{0:-^75s}".format(" WELCOME TO TIC TAC TOE GAME "))
-    print("\n1.Play with Users\t2.Play with Computer(Normal)\t3.Play with Computer(AI)\n\n4.Exit")
-    choice=input("\nEnter Your Choice: ")
-    if choice.isdigit():
-      if choice=='1':
-        play_with_players()
-        while True:
-          print("\nDou You want to play again? If yes then enter 'Y' or Enter 'q' for quit. ")
-          ch=input("\nEnter Your Choice: ")
-          if (ch.upper())=='Y':
-            play_again()
-          elif (ch.upper())=='Q':
-            cmd=False
-            break
-          else:
-            print("\nYou have entered Invalid characters!")
-            
-      elif choice=='2':
-        play_with_normal_computer()
-        while True:
-          print("\nDou You want to play again? If yes then enter 'Y' or Enter 'q' for quit. ") 
-          ch=input("\nEnter Your Choice: ")
-          if (ch.upper()=='Y'):
-            play_again()
-          elif (ch.upper()=='Q'):
-            cmd=False
-            break
-          else:
-            print("\nYou have entered Invalid characters!")
-
-      elif choice=='3':
+        print("❗ Invalid choice. Please enter 'C' or 'P'.")
         play_with_smart_computer()
-        
-      elif choice=='4':
-        break
 
-      else:
-        print("You have entered Invalid options, please select from (1-4) only")
+    if winner == "X":
+        print(f"🎉 Smart Computer {PLAYER_X_EMOJI} won the game!")
+    elif winner == "O":
+        print(f"🎉 Congrats {player2} {PLAYER_O_EMOJI}, you won the game!")
     else:
-      print("\nChoice must be digit only! Try again")
+        print("🤝 It's a tie! Well played!")
 
-#game will start from here...
-option_menu(player)
+
+# Option menu with emoji and clear choices
+def option_menu():
+    while True:
+        print("\n{0:-^75}".format(" 🎮 WELCOME TO TIC TAC TOE 🎮 "))
+        print(
+            "\n1️⃣  Play with another Player\n2️⃣  Play with Normal Computer\n3️⃣  Play with Smart Computer\n4️⃣  Exit")
+        choice = input("\nEnter Your Choice: ")
+        if choice == '1':
+            play_with_players()
+        elif choice == '2':
+            play_with_normal_computer()
+        elif choice == '3':
+            play_with_smart_computer()
+        elif choice == '4':
+            print("👋 Goodbye!")
+            break
+        else:
+            print("❗ Invalid choice. Please select 1, 2, 3, or 4.")
+
+
+# Start the game by calling option_menu
+option_menu()
